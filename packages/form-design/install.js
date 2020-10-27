@@ -1,5 +1,5 @@
-import Config from './config'
-import FormDesign from './index.vue'
+import Config from '../config'
+import FormDesign from '../form-design.vue'
 
 export default {
   install (Vue) {

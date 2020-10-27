@@ -98,6 +98,11 @@
                        size="medium"
                        icon="el-icon-document"
                        @click="handleAvueDoc">Avue文档</el-button>
+            <el-button
+                       size="medium"
+                       type="text"
+                       icon="el-icon-delete"
+                      @click="onToggleTableEdit">表格编辑</el-button>
             <el-button v-if="toolbar.includes('import')"
                        type="text"
                        size="medium"
@@ -119,6 +124,7 @@
                        size="medium"
                        icon="el-icon-delete"
                        @click="handleClear">清空</el-button>
+            
             <slot name="toolbar"></slot>
           </div>
         </el-header>
@@ -127,6 +133,7 @@
                        :data="widgetForm"
                        :select.sync="widgetFormSelect"
                        @change="handleHistoryChange(widgetForm)"></widget-form>
+          <!-- <Crud v-if="openTableEdit" /> -->
         </el-main>
       </el-container>
       <!-- 右侧配置 -->
@@ -223,6 +230,7 @@ import Draggable from 'vuedraggable'
 import WidgetForm from './WidgetForm'
 import FormConfig from './FormConfig'
 import WidgetConfig from './WidgetConfig'
+// import Crud from '@/crud/index'
 
 export default {
   name: "FormDesign",
@@ -344,7 +352,9 @@ export default {
         index: 0, // 当前下标
         maxStep: 20, // 最大记录步数
         steps: [], // 历史步数
-      }
+      },
+      // 表格编辑
+      openTableEdit: false
     }
   },
   mounted() {
@@ -352,6 +362,9 @@ export default {
     this.handleLoadCss()
   },
   methods: {
+    onToggleTableEdit() {
+      this.openTableEdit = !this.openTableEdit   
+    },
     // 组件初始化时加载本地存储中的options(需开启storage),若不存在则读取用户配置的options
     async handleLoadStorage() {
       let options = this.options
