@@ -117,7 +117,7 @@
 </template>
 
 <script>
-import { setStore, getStore } from '@/util/local-store'
+import { setStore, getStore } from '@utils/local-store'
 import { option, tableOption, menuOption, dialogOption, btnOption } from './option'
 import { pretty } from 'js-object-pretty-print'
 import { crudDecoder } from './decoder.js'
@@ -251,6 +251,7 @@ export default {
         })
       })
       let jsStr = pretty(option, 4, "PRINT", true)//stringifyObject(option)// JSON.stringify(option, null, 4);
+      console.log('jsStr: ', jsStr);
       this.optionData = jsStr
       return jsStr;
 

@@ -1,6 +1,6 @@
 import { option } from './option'
 import { dicList } from './dic'
-import { deepClone } from '@/util/deepClone'
+import { deepClone } from '@utils/deepClone'
 export const crudDecoder = {
   getOptionKV: function () {
     // option.column

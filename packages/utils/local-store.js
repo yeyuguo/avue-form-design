@@ -1,6 +1,6 @@
 import {
   validatenull
-} from '@/util/validate';
+} from '@utils/validate';
 
 const keyName = 'avue-';
 /**

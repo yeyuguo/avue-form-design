@@ -133,7 +133,7 @@
                        :data="widgetForm"
                        :select.sync="widgetFormSelect"
                        @change="handleHistoryChange(widgetForm)"></widget-form>
-          <!-- <Crud v-if="openTableEdit" /> -->
+          <Crud v-if="openTableEdit" />
         </el-main>
       </el-container>
       <!-- 右侧配置 -->
@@ -230,11 +230,11 @@ import Draggable from 'vuedraggable'
 import WidgetForm from './WidgetForm'
 import FormConfig from './FormConfig'
 import WidgetConfig from './WidgetConfig'
-// import Crud from '@/crud/index'
+import Crud from '@/crud/index'
 
 export default {
   name: "FormDesign",
-  components: { Draggable, MonacoEditor, WidgetForm, FormConfig, WidgetConfig },
+  components: { Draggable, MonacoEditor, WidgetForm, FormConfig, WidgetConfig, Crud  },
   mixins: [history],
   props: {
     options: {

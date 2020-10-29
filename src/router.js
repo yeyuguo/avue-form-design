@@ -15,5 +15,9 @@ export default new Router({
     //   path: '/crud-design',
     //   component: () => import(/* webpackChunkName: "crud-design" */ '../packages/crud/index.vue')
     // }
+    {
+      path: '/test',
+      component: () => import(/* webpackChunkName: "form-design-test" */ '../src/test/index.vue')
+    },
   ]
 })
