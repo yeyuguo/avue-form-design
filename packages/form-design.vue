@@ -3,217 +3,239 @@
     <el-container>
       <!-- 左侧字段 -->
       <el-aside :width="leftWidth">
-        <div class="fields-list">
-          <template v-if="customFields && customFields.length > 0">
-            <el-link class="field-title"
-                     :underline="false"
-                     href="https://github.com/sscfaith/avue-form-design/blob/master/CHANGELOG.md#2020-09-22"
-                     target="_blank">自定义字段 <i class="el-icon-question"></i></el-link>
-            <draggable tag="ul"
-                       :list="customFields"
-                       :group="{ name: 'form', pull: 'clone', put: false }"
-                       ghost-class="ghost"
-                       :sort="false">
-              <template v-for="(item, index) in customFields">
-                <el-tooltip v-if="item.tips"
-                            effect="dark"
-                            :content="item.tips"
-                            :key="index">
-                  <li class="field-label"
-                      :key="index">
-                    <a style="padding: 0 5px;"
-                       @click="handleFieldClick(item)">
-                      <i :class="item.icon"></i>
-                      <span style="margin-left: 5px;">{{item.title || item.label}}</span>
-                    </a>
-                  </li>
-                </el-tooltip>
-                <li v-else
-                    class="field-label"
-                    :key="index">
-                  <a style="padding: 0 5px;"
-                     @click="handleFieldClick(item)">
-                    <i :class="item.icon"></i>
-                    <span style="margin-left: 5px;">{{item.title || item.label}}</span>
-                  </a>
-                </li>
+
+        <el-tabs v-model="componentLeft">
+          <el-tab-pane class="px-5" label="常用组件" name="components">
+            <div class="fields-list">
+              <template v-if="customFields && customFields.length > 0">
+                <el-link class="field-title"
+                        :underline="false"
+                        href="https://github.com/sscfaith/avue-form-design/blob/master/CHANGELOG.md#2020-09-22"
+                        target="_blank">自定义字段 <i class="el-icon-question"></i></el-link>
+                <draggable tag="ul"
+                          :list="customFields"
+                          :group="{ name: 'form', pull: 'clone', put: false }"
+                          ghost-class="ghost"
+                          :sort="false">
+                  <template v-for="(item, index) in customFields">
+                    <el-tooltip v-if="item.tips"
+                                effect="dark"
+                                :content="item.tips"
+                                :key="index">
+                      <li class="field-label"
+                          :key="index">
+                        <a style="padding: 0 5px;"
+                          @click="handleFieldClick(item)">
+                          <i :class="item.icon"></i>
+                          <span style="margin-left: 5px;">{{item.title || item.label}}</span>
+                        </a>
+                      </li>
+                    </el-tooltip>
+                    <li v-else
+                        class="field-label"
+                        :key="index">
+                      <a style="padding: 0 5px;"
+                        @click="handleFieldClick(item)">
+                        <i :class="item.icon"></i>
+                        <span style="margin-left: 5px;">{{item.title || item.label}}</span>
+                      </a>
+                    </li>
+                  </template>
+                </draggable>
               </template>
-            </draggable>
-          </template>
-          <div v-for="(field, index) in fields"
-               :key="index">
-            <template v-if="field.list.find(f => includeFields.includes(f.type))">
-              <div class="field-title">{{field.title}}</div>
-              <draggable tag="ul"
-                         :list="field.list"
-                         :group="{ name: 'form', pull: 'clone', put: false }"
-                         ghost-class="ghost"
-                         :sort="false">
-                <template v-for="(item, index) in field.list">
-                  <li class="field-label"
-                      v-if="includeFields.includes(item.type)"
-                      :key="index">
-                    <a @click="handleFieldClick(item)">
-                      <i class="icon iconfont"
-                         :class="item.icon"></i>
-                      <span>{{item.title || item.label}}</span>
-                    </a>
-                  </li>
+              <div v-for="(field, index) in fields"
+                  :key="index">
+                <template v-if="field.list.find(f => includeFields.includes(f.type))">
+                  <div class="field-title">{{field.title}}</div>
+                  <draggable tag="ul"
+                            :list="field.list"
+                            :group="{ name: 'form', pull: 'clone', put: false }"
+                            ghost-class="ghost"
+                            :sort="false">
+                    <template v-for="(item, index) in field.list">
+                      <li class="field-label"
+                          v-if="includeFields.includes(item.type)"
+                          :key="index">
+                        <a @click="handleFieldClick(item)">
+                          <i class="icon iconfont"
+                            :class="item.icon"></i>
+                          <span>{{item.title || item.label}}</span>
+                        </a>
+                      </li>
+                    </template>
+                  </draggable>
                 </template>
-              </draggable>
-            </template>
-          </div>
-        </div>
-      </el-aside>
-      <!-- 中间主布局 -->
-      <el-container class="widget-container"
-                    direction="vertical">
-        <el-header class="widget-container-header">
-          <div>
-            <template v-if="undoRedo">
-              <el-button type="text"
-                         size="medium"
-                         icon="el-icon-refresh-left"
-                         :disabled="historySteps.index == 0"
-                         @click="widgetForm = handleUndo()">撤销</el-button>
-              <el-button type="text"
-                         size="medium"
-                         icon="el-icon-refresh-right"
-                         :disabled="historySteps.index == historySteps.steps.length - 1"
-                         @click="widgetForm = handleRedo()">重做</el-button>
-            </template>
-          </div>
-          <div style="display: flex; align-items: center;">
-            <iframe src="https://ghbtns.com/github-btn.html?user=sscfaith&repo=avue-form-design&type=star&count=true"
-                    frameborder="0"
-                    scrolling="0"
-                    width="100"
-                    height="20"
-                    title="GitHub"
-                    style="margin-left: 10px;"
-                    v-if="showGithubStar"></iframe>
-            <slot name="toolbar-left"></slot>
-            <el-button v-if="toolbar.includes('avue-doc')"
-                       type="text"
-                       size="medium"
-                       icon="el-icon-document"
-                       @click="handleAvueDoc">Avue文档</el-button>
-            <el-button
-                       size="medium"
-                       type="text"
-                       icon="el-icon-delete"
-                      @click="onToggleTableEdit">表格编辑</el-button>
-            <el-button v-if="toolbar.includes('import')"
-                       type="text"
-                       size="medium"
-                       icon="el-icon-upload2"
-                       @click="importJsonVisible = true">导入JSON</el-button>
-            <el-button v-if="toolbar.includes('generate')"
-                       type="text"
-                       size="medium"
-                       icon="el-icon-download"
-                       @click="handleGenerateJson">生成JSON</el-button>
-            <el-button v-if="toolbar.includes('preview')"
-                       type="text"
-                       size="medium"
-                       icon="el-icon-view"
-                       @click="handlePreview">预览</el-button>
-            <el-button v-if="toolbar.includes('clear')"
-                       class="danger"
-                       type="text"
-                       size="medium"
-                       icon="el-icon-delete"
-                       @click="handleClear">清空</el-button>
-            
-            <slot name="toolbar"></slot>
-          </div>
-        </el-header>
-        <el-main :style="{background: widgetForm.column.length == 0 ? `url(${widgetEmpty}) no-repeat 50%`: ''}">
-          <widget-form ref="widgetForm"
-                       :data="widgetForm"
-                       :select.sync="widgetFormSelect"
-                       @change="handleHistoryChange(widgetForm)"></widget-form>
-          <Crud v-if="openTableEdit" />
-        </el-main>
-      </el-container>
-      <!-- 右侧配置 -->
-      <el-aside class="widget-config-container"
-                :width="rightWidth">
-        <el-tabs v-model="configTab"
-                 stretch>
-          <el-tab-pane label="字段属性"
-                       name="widget"
-                       style="padding: 0 10px;">
-            <widget-config :data="widgetFormSelect"></widget-config>
+              </div>
+            </div>
           </el-tab-pane>
-          <el-tab-pane label="表单属性"
-                       name="form"
-                       lazy
-                       style="padding: 0 10px;">
-            <form-config :data="widgetForm"></form-config>
+          <el-tab-pane label="常用模块" name="module">
+            <CommonDefineComponent />
           </el-tab-pane>
+          <el-tab-pane label="表格编辑" name="table"></el-tab-pane>
         </el-tabs>
       </el-aside>
-      <!-- 弹窗 -->
-      <!-- 导入JSON -->
-      <el-drawer title="导入JSON"
-                 :visible.sync="importJsonVisible"
-                 size="50%"
-                 append-to-body
-                 destroy-on-close>
-        <monaco-editor v-model="importJson"
-                       keyIndex="import"
-                       height="82%"></monaco-editor>
-        <div class="drawer-foot">
-          <el-button size="medium"
-                     type="primary"
-                     @click="handleImportJsonSubmit">确定</el-button>
-          <el-button size="medium"
-                     type="danger"
-                     @click="importJsonVisible = false">取消</el-button>
+      <!-- 常用组件 -->
+      <template v-if="componentLeft==='table'">
+        <div class="flex-1">
+          <Crud class="py-10" />
         </div>
-      </el-drawer>
-      <!-- 生成JSON -->
-      <el-drawer title="生成JSON"
-                 :visible.sync="generateJsonVisible"
-                 size="50%"
-                 append-to-body>
-        <monaco-editor v-model="widgetFormPreview"
-                       keyIndex="generate"
-                       height="82%"
-                       :read-only="true"></monaco-editor>
-        <div class="drawer-foot">
-          <el-button size="medium"
-                     type="primary"
-                     @click="handleGenerate">生成</el-button>
-          <el-button size="medium"
-                     type="primary"
-                     slot="reference"
-                     @click="handleCopy"
-                     style="margin-left: 10px;">复制</el-button>
+      </template>
+      <template v-else-if="componentLeft==='module'">
+        <div class="flex-1"   >
+          表格编辑
         </div>
-      </el-drawer>
-      <!-- 预览 -->
-      <el-drawer title="预览"
-                 :visible.sync="previewVisible"
-                 size="60%"
-                 append-to-body
-                 :before-close="handleBeforeClose">
-        <avue-form v-if="previewVisible"
-                   ref="form"
-                   class="preview-form"
-                   :option="widgetFormPreview"
-                   v-model="widgetModels"
-                   @submit="handlePreviewSubmit"></avue-form>
-        <div class="drawer-foot">
-          <el-button size="medium"
-                     type="primary"
-                     @click="handlePreviewSubmit">确定</el-button>
-          <el-button size="medium"
-                     type="danger"
-                     @click="handleBeforeClose">取消</el-button>
-        </div>
-      </el-drawer>
+      </template>
+      <template v-else-if="componentLeft==='components'">
+        <!-- 组件配置 -->
+        <!-- 中间主布局 -->
+        <el-container class="widget-container"
+                      direction="vertical">
+          <el-header class="widget-container-header">
+            <div>
+              <template v-if="undoRedo">
+                <el-button type="text"
+                          size="medium"
+                          icon="el-icon-refresh-left"
+                          :disabled="historySteps.index == 0"
+                          @click="widgetForm = handleUndo()">撤销</el-button>
+                <el-button type="text"
+                          size="medium"
+                          icon="el-icon-refresh-right"
+                          :disabled="historySteps.index == historySteps.steps.length - 1"
+                          @click="widgetForm = handleRedo()">重做</el-button>
+              </template>
+            </div>
+            <div style="display: flex; align-items: center;">
+              <iframe src="https://ghbtns.com/github-btn.html?user=sscfaith&repo=avue-form-design&type=star&count=true"
+                      frameborder="0"
+                      scrolling="0"
+                      width="100"
+                      height="20"
+                      title="GitHub"
+                      style="margin-left: 10px;"
+                      v-if="showGithubStar"></iframe>
+              <slot name="toolbar-left"></slot>
+              <el-button v-if="toolbar.includes('avue-doc')"
+                        type="text"
+                        size="medium"
+                        icon="el-icon-document"
+                        @click="handleAvueDoc">Avue文档</el-button>
+              <el-button
+                        size="medium"
+                        type="text"
+                        icon="el-icon-delete"
+                        @click="onToggleTableEdit">表格编辑</el-button>
+              <el-button v-if="toolbar.includes('import')"
+                        type="text"
+                        size="medium"
+                        icon="el-icon-upload2"
+                        @click="importJsonVisible = true">导入JSON</el-button>
+              <el-button v-if="toolbar.includes('generate')"
+                        type="text"
+                        size="medium"
+                        icon="el-icon-download"
+                        @click="handleGenerateJson">生成JSON</el-button>
+              <el-button v-if="toolbar.includes('preview')"
+                        type="text"
+                        size="medium"
+                        icon="el-icon-view"
+                        @click="handlePreview">预览</el-button>
+              <el-button v-if="toolbar.includes('clear')"
+                        class="danger"
+                        type="text"
+                        size="medium"
+                        icon="el-icon-delete"
+                        @click="handleClear">清空</el-button>
+              
+              <slot name="toolbar"></slot>
+            </div>
+          </el-header>
+          <el-main :style="{background: widgetForm.column.length == 0 ? `url(${widgetEmpty}) no-repeat 50%`: ''}">
+            <widget-form ref="widgetForm"
+                        :data="widgetForm"
+                        :select.sync="widgetFormSelect"
+                        @change="handleHistoryChange(widgetForm)"></widget-form>
+          </el-main>
+        </el-container>
+        <!-- 右侧配置 -->
+        <el-aside class="widget-config-container"
+                  :width="rightWidth">
+          <el-tabs v-model="configTab"
+                  stretch>
+            <el-tab-pane label="字段属性"
+                        name="widget"
+                        style="padding: 0 10px;">
+              <widget-config :data="widgetFormSelect"></widget-config>
+            </el-tab-pane>
+            <el-tab-pane label="表单属性"
+                        name="form"
+                        lazy
+                        style="padding: 0 10px;">
+              <form-config :data="widgetForm"></form-config>
+            </el-tab-pane>
+          </el-tabs>
+        </el-aside>
+        <!-- 弹窗 -->
+        <!-- 导入JSON -->
+        <el-drawer title="导入JSON"
+                  :visible.sync="importJsonVisible"
+                  size="50%"
+                  append-to-body
+                  destroy-on-close>
+          <monaco-editor v-model="importJson"
+                        keyIndex="import"
+                        height="82%"></monaco-editor>
+          <div class="drawer-foot">
+            <el-button size="medium"
+                      type="primary"
+                      @click="handleImportJsonSubmit">确定</el-button>
+            <el-button size="medium"
+                      type="danger"
+                      @click="importJsonVisible = false">取消</el-button>
+          </div>
+        </el-drawer>
+        <!-- 生成JSON -->
+        <el-drawer title="生成JSON"
+                  :visible.sync="generateJsonVisible"
+                  size="50%"
+                  append-to-body>
+          <monaco-editor v-model="widgetFormPreview"
+                        keyIndex="generate"
+                        height="82%"
+                        :read-only="true"></monaco-editor>
+          <div class="drawer-foot">
+            <el-button size="medium"
+                      type="primary"
+                      @click="handleGenerate">生成</el-button>
+            <el-button size="medium"
+                      type="primary"
+                      slot="reference"
+                      @click="handleCopy"
+                      style="margin-left: 10px;">复制</el-button>
+          </div>
+        </el-drawer>
+        <!-- 预览 -->
+        <el-drawer title="预览"
+                  :visible.sync="previewVisible"
+                  size="60%"
+                  append-to-body
+                  :before-close="handleBeforeClose">
+          <avue-form v-if="previewVisible"
+                    ref="form"
+                    class="preview-form"
+                    :option="widgetFormPreview"
+                    v-model="widgetModels"
+                    @submit="handlePreviewSubmit"></avue-form>
+          <div class="drawer-foot">
+            <el-button size="medium"
+                      type="primary"
+                      @click="handlePreviewSubmit">确定</el-button>
+            <el-button size="medium"
+                      type="danger"
+                      @click="handleBeforeClose">取消</el-button>
+          </div>
+        </el-drawer>
+      </template>
     </el-container>
   </div>
 </template>
@@ -231,10 +253,11 @@ import WidgetForm from './WidgetForm'
 import FormConfig from './FormConfig'
 import WidgetConfig from './WidgetConfig'
 import Crud from '@/crud/index'
+import CommonDefineComponent from './common-define-component'
 
 export default {
   name: "FormDesign",
-  components: { Draggable, MonacoEditor, WidgetForm, FormConfig, WidgetConfig, Crud  },
+  components: { Draggable, MonacoEditor, WidgetForm, FormConfig, WidgetConfig, Crud, CommonDefineComponent  },
   mixins: [history],
   props: {
     options: {
@@ -326,6 +349,7 @@ export default {
     return {
       widgetEmpty,
       fields,
+      componentLeft: 'module', // component/module
       widgetForm: {
         column: [],
         labelPosition: 'left',
