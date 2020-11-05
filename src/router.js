@@ -5,16 +5,17 @@ Vue.use(Router)
 
 export default new Router({
   mode: 'history',
-  // redirect: '/form-design',
+  redirect: '/form-design',
   routes: [
     {
+      name: 'form-design',
       path: '/form-design',
       component: () => import(/* webpackChunkName: "form-design" */ '../packages/form-design-index.vue')
     },
-    // {
-    //   path: '/crud-design',
-    //   component: () => import(/* webpackChunkName: "crud-design" */ '../packages/crud/index.vue')
-    // }
+    {
+      path: '/crud-design',
+      component: () => import(/* webpackChunkName: "crud-design" */ '../packages/crud/index.vue')
+    },
     {
       path: '/test',
       component: () => import(/* webpackChunkName: "form-design-test" */ '../src/test/index.vue')

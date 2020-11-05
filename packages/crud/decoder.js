@@ -7,7 +7,7 @@ export const crudDecoder = {
     let kvObj = new Object();
     let selectTypeList = new Array()
     option.group.forEach(ele => {
-      if (ele.hasOwnProperty('column')) {
+      if (ele['column']) {
         ele.column.forEach(e => {
           // console.log(JSON.stringify(e))
           kvObj[e.prop] = "";
@@ -27,7 +27,7 @@ export const crudDecoder = {
   },
   //根据输入框类型填充
   prefillDicList: (ele) => {
-    if (ele.hasOwnProperty("type") && ele.type.length > 0) {
+    if (ele.type && ele.type.length > 0) {
       for (let i = 0; i < dicList.length; i++) {
         let item = dicList[i];
         // console.log(JSON.stringify(item))
@@ -46,7 +46,7 @@ export const crudDecoder = {
         let key = e.replace("$", "")
         if (ele[key] === 'true') {
           ele[e] = '是'
-        } else if (ele[key] === 'true') {
+        } else if (ele[key] === 'false') {
           ele[e] = '否'
         }
 

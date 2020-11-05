@@ -14,10 +14,12 @@
     "lib": "vue-cli-service build --target lib --name AvueFormDesign --dest lib --filename index --formats umd-min ./packages/index.js"
   },
   "dependencies": {
+    "filepond": "^4.21.1",
     "js-object-pretty-print": "^0.3.0",
     "mockjs": "^1.1.0",
     "monaco-editor": "^0.21.2",
     "v-jsoneditor": "^1.4.1",
+    "vue-filepond": "^6.0.3",
     "vuedraggable": "^2.24.2"
   },
   "devDependencies": {

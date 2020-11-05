@@ -1,20 +1,20 @@
 <template>
   <div class="">
-    测试
+    <MyFilePond />
   </div>
 </template>
 
 
 <script>
+import MyFilePond from './upload'
 export default {
-  name: "Test",
+  name: "TestUpload",
+  components: {
+    MyFilePond
+  },
   data() {
     return {}
   },
   methods: {}
 }
 </script>
-
-
-<style lang="scss" scoped>
-</style>
