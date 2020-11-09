@@ -483,13 +483,10 @@ export default {
     // 更新JSON - 弹窗
     handleGenerateJson() {
       this.transformToAvueOptions(this.widgetForm).then(data => {
-        // todo 更新未响应
-        console.log('data: ', data);
+        // todo 未响应式
         this.widgetFormPreview = data
         this.generateJsonVisible = true
         this.updatePreviewKey = new Date().getTime()
-        
-        
       })
     },
     // 生成JSON - 弹窗 - 确定

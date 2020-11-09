@@ -79,7 +79,6 @@ export default {
   methods: {
     getStorageConfig() {
       let config = localStorage.getItem(composeComponentKey)
-      console.log('config: ', config);
       if(!config) return 
       this.dataList = JSON.parse(config)
     },
