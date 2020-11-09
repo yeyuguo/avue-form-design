@@ -4,8 +4,8 @@
       <!-- 左侧字段 -->
       <el-aside :width="leftWidth">
 
-        <el-tabs v-model="componentLeft">
-          <el-tab-pane class="px-5" label="常用组件" name="components">
+        <el-tabs v-model="menuLeftActive">
+          <el-tab-pane class="px-5" label="基础组件" name="base">
             <div class="fields-list">
               <template v-if="customFields && customFields.length > 0">
                 <el-link class="field-title"
@@ -68,24 +68,21 @@
               </div>
             </div>
           </el-tab-pane>
-          <el-tab-pane label="常用模块" name="module">
-            <CommonDefineComponent />
+          <el-tab-pane label="模块组件" name="compose">
+            <ComposeComponents v-if="menuLeftActive=='compose'" />
           </el-tab-pane>
-          <el-tab-pane label="表格编辑" name="table"></el-tab-pane>
+          <el-tab-pane label="表格编辑" name="table">
+            <TableDesign />
+          </el-tab-pane>
         </el-tabs>
       </el-aside>
       <!-- 常用组件 -->
-      <template v-if="componentLeft==='table'">
+      <template v-if="menuLeftActive==='table'">
         <div class="flex-1">
           <Crud class="py-10" />
         </div>
       </template>
-      <template v-else-if="componentLeft==='module'">
-        <div class="flex-1"   >
-          表格编辑
-        </div>
-      </template>
-      <template v-else-if="componentLeft==='components'">
+      <template v-else-if="['base', 'compose'].includes(menuLeftActive)">
         <!-- 组件配置 -->
         <!-- 中间主布局 -->
         <el-container class="widget-container"
@@ -106,14 +103,14 @@
               </template>
             </div>
             <div style="display: flex; align-items: center;">
-              <iframe src="https://ghbtns.com/github-btn.html?user=sscfaith&repo=avue-form-design&type=star&count=true"
+              <!-- <iframe src="https://ghbtns.com/github-btn.html?user=sscfaith&repo=avue-form-design&type=star&count=true"
                       frameborder="0"
                       scrolling="0"
                       width="100"
                       height="20"
                       title="GitHub"
                       style="margin-left: 10px;"
-                      v-if="showGithubStar"></iframe>
+                      v-if="showGithubStar"></iframe> -->
               <slot name="toolbar-left"></slot>
               <el-button v-if="toolbar.includes('avue-doc')"
                         type="text"
@@ -123,8 +120,8 @@
               <el-button
                         size="medium"
                         type="text"
-                        icon="el-icon-delete"
-                        @click="onToggleTableEdit">表格编辑</el-button>
+                        icon="el-icon-download"
+                        @click="onSaveColumn"> 保存/下载配置 </el-button>
               <el-button v-if="toolbar.includes('import')"
                         type="text"
                         size="medium"
@@ -134,7 +131,7 @@
                         type="text"
                         size="medium"
                         icon="el-icon-download"
-                        @click="handleGenerateJson">生成JSON</el-button>
+                        @click="handleGenerateJson">更新JSON</el-button>
               <el-button v-if="toolbar.includes('preview')"
                         type="text"
                         size="medium"
@@ -201,12 +198,13 @@
                   append-to-body>
           <monaco-editor v-model="widgetFormPreview"
                         keyIndex="generate"
+                        :key="updatePreviewKey"
                         height="82%"
-                        :read-only="true"></monaco-editor>
+                        :read-only="false"></monaco-editor>
           <div class="drawer-foot">
             <el-button size="medium"
                       type="primary"
-                      @click="handleGenerate">生成</el-button>
+                      @click="handleGenerate">打印</el-button>
             <el-button size="medium"
                       type="primary"
                       slot="reference"
@@ -244,21 +242,29 @@
 import fields from './fieldsConfig.js'
 import beautifier from './utils/json-beautifier'
 import MonacoEditor from './utils/monaco-editor'
+import { saveFile } from './utils/file-handle'
 import widgetEmpty from './assets/widget-empty.png'
 import history from './mixins/history'
-
 import Draggable from 'vuedraggable'
 
 import WidgetForm from './WidgetForm'
 import FormConfig from './FormConfig'
 import WidgetConfig from './WidgetConfig'
 import Crud from '@/crud/index'
-import CommonDefineComponent from './common-define-component'
+import TableDesign from './table-design'
+import ComposeComponents from './compose-components'
+import {composeComponentKey} from './const' 
+
 
 export default {
   name: "FormDesign",
-  components: { Draggable, MonacoEditor, WidgetForm, FormConfig, WidgetConfig, Crud, CommonDefineComponent  },
+  components: { Draggable, MonacoEditor, WidgetForm, FormConfig, WidgetConfig, Crud, TableDesign,ComposeComponents },
   mixins: [history],
+  provide(){
+    return {
+      updateEditorFormConfig: this.updateEditorFormConfig
+    }
+  },
   props: {
     options: {
       type: [Object, String],
@@ -347,9 +353,10 @@ export default {
   },
   data() {
     return {
+      updatePreviewKey: 0, // 更新预览数据不刷新问题
       widgetEmpty,
       fields,
-      componentLeft: 'module', // component/module
+      menuLeftActive: 'compose', // base/compose
       widgetForm: {
         column: [],
         labelPosition: 'left',
@@ -473,11 +480,16 @@ export default {
         this.$message.error(e.message)
       }
     },
-    // 生成JSON - 弹窗
+    // 更新JSON - 弹窗
     handleGenerateJson() {
       this.transformToAvueOptions(this.widgetForm).then(data => {
+        // todo 更新未响应
+        console.log('data: ', data);
         this.widgetFormPreview = data
         this.generateJsonVisible = true
+        this.updatePreviewKey = new Date().getTime()
+        
+        
       })
     },
     // 生成JSON - 弹窗 - 确定
@@ -710,6 +722,34 @@ export default {
     },
     async getData() {
       return await this.transformToAvueOptions(this.widgetForm)
+    },
+    // 保存配置到常用模块
+    onSaveColumn() {
+      let config = localStorage.getItem(composeComponentKey)
+      if(!config) {
+        config = []
+      }else{
+        config = JSON.parse(config)
+      }
+      config.push(this.widgetForm)
+      const result = JSON.stringify(config)
+      try {
+        localStorage.setItem(composeComponentKey, result)
+        this.$confirm('是否需要下载成配置', '是否下载').then(()=>{
+          saveFile( result, 'test.json')
+        })
+      } catch (error) {
+        console.error('error', error)        
+      }
+    },
+    // 更新表单编辑的配置
+    updateEditorFormConfig(config) {
+      const { column, ...formInfo } = config
+      this.widgetForm = {
+        ...this.widgetForm,
+        ...formInfo,
+        column: [...column]
+      }
     }
   }
 }

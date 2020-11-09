@@ -11,7 +11,8 @@ module.exports = {
   configureWebpack: {
     output: {
       libraryExport: 'default'
-    }
+    },
+    devtool: 'source-map',
   },
 
   chainWebpack: (config) => {
@@ -25,6 +26,7 @@ module.exports = {
       .set('@utils', resolve('packages/utils'))
       .set('@mixins', resolve('packages/mixins'))
   },
+
 
   devServer: {
     open: true
