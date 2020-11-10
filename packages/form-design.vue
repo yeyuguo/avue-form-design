@@ -72,7 +72,7 @@
             <ComposeComponents :source="'form'" v-if="menuLeftActive=='compose'" />
           </el-tab-pane>
           <el-tab-pane label="表格组合" name="table">
-            <TableDesign />
+            <ComposeComponents :source="'table'" v-if="menuLeftActive=='table'" />
           </el-tab-pane>
         </el-tabs>
       </el-aside>
@@ -256,14 +256,13 @@ import WidgetForm from './WidgetForm'
 import FormConfig from './FormConfig'
 import WidgetConfig from './WidgetConfig'
 import Crud from '@/crud/index'
-import TableDesign from './table-design'
 import ComposeComponents from './compose-components'
 import PreviewPage from './preview-page'
 
 
 export default {
   name: "FormDesign",
-  components: { Draggable, MonacoEditor, WidgetForm, FormConfig, WidgetConfig, Crud, TableDesign,ComposeComponents, PreviewPage },
+  components: { Draggable, MonacoEditor, WidgetForm, FormConfig, WidgetConfig, Crud,ComposeComponents, PreviewPage },
   mixins: [history],
   provide(){
     return {

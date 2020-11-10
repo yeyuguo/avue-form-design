@@ -18,9 +18,7 @@
                 v-model="widgetModels"></avue-form>
           </template>
           <template v-else>
-            <div>
-              表格组合
-            </div>
+            <avue-crud :option="item" :data="dataList" class="scale-50" />
           </template>
         </div>
     </template>
@@ -34,6 +32,9 @@
 <script>
 import NoData from '../components/no-data'
 import { composeComponentKey } from '../const'
+
+
+
 export default {
   name: "ComposeComponents",
   components: { NoData },
@@ -48,10 +49,10 @@ export default {
     return {
       widgetModels: {},
       dataList: [
-        // demoData
+        // demoData_form
       ],
       delePopVisible: false,
-      demoData: {
+      demoData_form: {
         column: [
           {
             type: 'title',
@@ -83,17 +84,29 @@ export default {
         emptyBtn: true,
         emptyText: '清空',
         menuPosition: 'center'
-      }
+      },
+      // 表格 demo
+      demoData_table: [{"a":"于刚","b":"傅洋"},{"a":"阎强","b":"邵超"},{"a":"叶娟","b":"徐强"},{"a":"卢勇","b":"戴磊"},{"a":"杨芳","b":"锺军"},{"a":"胡平","b":"郝静"},{"a":"沈娜","b":"蔡杰"},{"a":"李杰","b":"毛强"},{"a":"乔静","b":"叶平"},{"a":"侯军","b":"马磊"}],
     }
   },
   computed: {
-    configKeyName() {
+    localKey() {
       const dict = {
-        form: 'widgetForm', 
+        form: 'formConfig', 
+        table: 'tableConfig'
+      }   
+      return dict[this.source]
+    },
+    storeKey() {
+      const dict = {
+        form: 'formConfig', 
         table: 'tableConfig'
       }
       return dict[this.source]
     },
+    dataSource() {
+      return this.$store.state[this.storeKey]
+    }
   },
   created() {
     this.getStorageConfig();
@@ -102,14 +115,15 @@ export default {
     getStorageConfig() {
       let config = localStorage.getItem(composeComponentKey)
       config = JSON.parse(config)
-      if(!config || !config.formConfig) return 
-      this.dataList = config.formConfig
+      if(!config || !config[this.localKey]) return 
+      this.dataList = config[this.localKey]
     },
     updateFormConfig(item) {
       this.$confirm('会覆盖当前编辑配置','更新配置').then(()=>{
         if(this.source === 'form') {
           this.updateEditorFormConfig(item)
         }
+        this.$store.commit('updateConfig', {name: this.storeKey, value: item})
       })
     },
     // 清除单个组合组件配置
@@ -119,7 +133,7 @@ export default {
         this.dataList.splice(index, 1)
         let config = localStorage.getItem(composeComponentKey)
         config = JSON.parse(config)
-        config[this.configKeyName] = this.dataList
+        config[this.localKey] = this.dataList
         localStorage.setItem(composeComponentKey, JSON.stringify(config))
       }).catch(() => {
 

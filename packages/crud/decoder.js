@@ -54,6 +54,7 @@ export const crudDecoder = {
     })
     //console.log("prefillDicList:"+JSON.stringify(ele))
   },
+  // 预览数据格式 转成 表格编辑格式
   decode: function (opt, boolAsStr = false) {//boolAsStr bool 是否按字符串处理,默认不按字符处理
     // console.log(opt)
     if (Object.keys(opt).length == 0) return;
@@ -78,5 +79,24 @@ export const crudDecoder = {
 
     //console.log("decoder decode:"+JSON.stringify(objList))
     return objList;
+  }, 
+  // 表格数组 编辑项 转成 预览数据格式
+  encodeAry: function(data=[]) {
+    let dataList = deepClone(data)
+    function vaild (option = {}, ele = '') {
+      const result = option[ele] + '' || '';
+      return !result || ele.includes('$')
+    }
+    dataList = dataList.map(item=> {
+      Object.keys(item).forEach(keyname=>{
+        if(vaild(item, keyname)){
+          delete item[keyname];
+        }
+      })
+      return item
+    })
+    return {
+      column: dataList
+    }
   }
 }

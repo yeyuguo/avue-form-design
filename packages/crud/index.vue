@@ -111,7 +111,7 @@
     <el-drawer title="预览"
                size="70%"
                :visible.sync="drawer">
-      <avue-crud :option="storePreviewConfigTable"
+      <avue-crud :option="codeOption"
                  :data="codeList"></avue-crud>
     </el-drawer>
   </div>
@@ -149,9 +149,8 @@ export default {
       btnForm: {},
       btnOption: btnOption,
       option: option,
-      list: [],
+      list: [], // 表格 - 编辑配置
       optionData: ''
-
     }
   },
   created () {
@@ -181,17 +180,22 @@ export default {
       }
       return list
     },
+    // 表格预览数据：  list 里去空和 $ 数据
     codeOption () {
       let jsStr = this.code()
       var jsObj = eval('(' + jsStr + ')');
       return jsObj
-    },
-    // store 里存储的 codeOption
-    storePreviewConfigTable() {
-      return this.$store.state.tableConfigPreview
     }
   },
   watch: {
+    // store 里存储的 codeOption
+    // "$store.state.tableConfigPreview":function(value){
+    //   this.codeOption = value
+    // },
+    // store 里存储的 tableConfig
+    "$store.state.tableConfig":function(value){
+      this.list = value
+    },
     optionData (value) {
       let columnOb = eval('(' + value + ')');//转换页面js回 option 对象
       let optionObj = crudDecoder.decode(columnOb)
@@ -199,6 +203,13 @@ export default {
     },
     list (value) {
       setStore({ name: 'crud_list', content: value })
+      this.$store.commit(
+        'updateConfig',
+        {
+          name: 'tableConfig',
+          value
+        }
+      )
     }
   },
   methods: {
@@ -248,6 +259,7 @@ export default {
       let option = {};
       option = this.deepClone(Object.assign(this.tableForm, this.menuForm, this.dialogForm, this.btnForm
       ) || {});
+      // todo 更换为 encodeAry
       Object.keys(option).forEach(ele => {
         if (vaild(option, ele)) delete option[ele];
       })
@@ -301,7 +313,7 @@ export default {
       done();
     },
     onSaveColumn() {
-      saveConfigToLocal.call(this,'tableConfig', this.storePreviewConfigTable)
+      saveConfigToLocal.call(this,'tableConfig', this.list)
     },
   }
 }

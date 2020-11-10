@@ -4,26 +4,33 @@ import Vuex from 'vuex'
 Vue.use(Vuex)
 
 
-function updateConfig(state, keyname, value) {
+function updateConfig(state, {name, value}) {
   console.log('state: ', state);
-  state[keyname] = value
+  state[name] = value
 }
 
 const store = new Vuex.Store({
   state: {
     // 表单配置
-    widgetForm: {}, // 表单设计 数据
+    formConfig: {}, // 表单设计 数据
     widgetFormPreview: {}, // 表单预览 数据【和 widgetForm 不一样】
     // 表格配置
     tableConfig: {}, 
     tableConfigPreview: {} // 表格预览
   },
   mutations: {
+    updateConfig: updateConfig,
     updateConfigPreviewForm(state, config) {
-      updateConfig(state, 'widgetFormPreview', config)
+      updateConfig(state, {
+        name: 'widgetFormPreview', 
+        value: config
+      })
     },
     updateConfigPreviewTable(state, config) {
-      updateConfig(state, 'tableConfigPreview', config)
+      updateConfig(state, {
+        name: 'tableConfigPreview', 
+        value: config
+      })
     }
   }
 })
