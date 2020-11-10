@@ -4,7 +4,7 @@
       <!-- 左侧字段 -->
       <el-aside :width="leftWidth">
 
-        <el-tabs v-model="menuLeftActive">
+        <el-tabs class="compose-menu-tab" v-model="menuLeftActive">
           <el-tab-pane class="px-5" label="基础组件" name="base">
             <div class="fields-list">
               <template v-if="customFields && customFields.length > 0">
@@ -68,10 +68,10 @@
               </div>
             </div>
           </el-tab-pane>
-          <el-tab-pane label="模块组件" name="compose">
-            <ComposeComponents v-if="menuLeftActive=='compose'" />
+          <el-tab-pane class="" label="表单组合" name="compose">
+            <ComposeComponents :source="'form'" v-if="menuLeftActive=='compose'" />
           </el-tab-pane>
-          <el-tab-pane label="表格编辑" name="table">
+          <el-tab-pane label="表格组合" name="table">
             <TableDesign />
           </el-tab-pane>
         </el-tabs>
@@ -79,7 +79,7 @@
       <!-- 常用组件 -->
       <template v-if="menuLeftActive==='table'">
         <div class="flex-1">
-          <Crud class="py-10" />
+          <Crud class="p-5" />
         </div>
       </template>
       <template v-else-if="['base', 'compose'].includes(menuLeftActive)">
@@ -117,26 +117,17 @@
                         size="medium"
                         icon="el-icon-document"
                         @click="handleAvueDoc">Avue文档</el-button>
-              <el-button
-                        size="medium"
-                        type="text"
-                        icon="el-icon-download"
-                        @click="onSaveColumn"> 保存/下载配置 </el-button>
+              
               <el-button v-if="toolbar.includes('import')"
                         type="text"
                         size="medium"
                         icon="el-icon-upload2"
-                        @click="importJsonVisible = true">导入JSON</el-button>
+                        @click="importJsonVisible = true">导入表单JSON</el-button>
               <el-button v-if="toolbar.includes('generate')"
                         type="text"
                         size="medium"
                         icon="el-icon-download"
-                        @click="handleGenerateJson">更新JSON</el-button>
-              <el-button v-if="toolbar.includes('preview')"
-                        type="text"
-                        size="medium"
-                        icon="el-icon-view"
-                        @click="handlePreview">预览</el-button>
+                        @click="handleGenerateJson">查看表单JSON</el-button>
               <el-button v-if="toolbar.includes('clear')"
                         class="danger"
                         type="text"
@@ -144,6 +135,16 @@
                         icon="el-icon-delete"
                         @click="handleClear">清空</el-button>
               
+              <el-button v-if="toolbar.includes('preview')"
+                        type="text"
+                        size="medium"
+                        icon="el-icon-view"
+                        @click="handlePreview">预览</el-button>
+              <el-button
+                        size="medium"
+                        type="text"
+                        icon="el-icon-download"
+                        @click="onSaveColumn"> 保存/下载配置 </el-button>
               <slot name="toolbar"></slot>
             </div>
           </el-header>
@@ -215,22 +216,26 @@
         <!-- 预览 -->
         <el-drawer title="预览"
                   :visible.sync="previewVisible"
-                  size="60%"
+                  size="70%"
                   append-to-body
+                  class="preview-page"
                   :before-close="handleBeforeClose">
-          <avue-form v-if="previewVisible"
-                    ref="form"
-                    class="preview-form"
-                    :option="widgetFormPreview"
-                    v-model="widgetModels"
-                    @submit="handlePreviewSubmit"></avue-form>
-          <div class="drawer-foot">
-            <el-button size="medium"
-                      type="primary"
-                      @click="handlePreviewSubmit">确定</el-button>
-            <el-button size="medium"
-                      type="danger"
-                      @click="handleBeforeClose">取消</el-button>
+          <div>
+            <PreviewPage />
+            <avue-form v-if="previewVisible"
+                      ref="form"
+                      class="preview-form"
+                      :option="widgetFormPreview"
+                      v-model="widgetModels"
+                      @submit="handlePreviewSubmit"></avue-form>
+            <!-- <div class="drawer-foot">
+              <el-button size="medium"
+                        type="primary"
+                        @click="handlePreviewSubmit">确定</el-button>
+              <el-button size="medium"
+                        type="danger"
+                        @click="handleBeforeClose">取消</el-button>
+            </div> -->
           </div>
         </el-drawer>
       </template>
@@ -242,7 +247,7 @@
 import fields from './fieldsConfig.js'
 import beautifier from './utils/json-beautifier'
 import MonacoEditor from './utils/monaco-editor'
-import { saveFile } from './utils/file-handle'
+import { saveConfigToLocal } from './utils/file-handle'
 import widgetEmpty from './assets/widget-empty.png'
 import history from './mixins/history'
 import Draggable from 'vuedraggable'
@@ -253,12 +258,12 @@ import WidgetConfig from './WidgetConfig'
 import Crud from '@/crud/index'
 import TableDesign from './table-design'
 import ComposeComponents from './compose-components'
-import {composeComponentKey} from './const' 
+import PreviewPage from './preview-page'
 
 
 export default {
   name: "FormDesign",
-  components: { Draggable, MonacoEditor, WidgetForm, FormConfig, WidgetConfig, Crud, TableDesign,ComposeComponents },
+  components: { Draggable, MonacoEditor, WidgetForm, FormConfig, WidgetConfig, Crud, TableDesign,ComposeComponents, PreviewPage },
   mixins: [history],
   provide(){
     return {
@@ -458,12 +463,17 @@ export default {
 
       this.$refs.widgetForm.handleWidgetAdd({ newIndex })
     },
+    // 更新预览数据
+    updateFormPreviewData(data) {
+      this.widgetFormPreview = data
+      this.$store.commit('updateConfigPreviewForm', this.widgetFormPreview)
+    },
     // 预览 - 弹窗
     handlePreview() {
       if (!this.widgetForm.column || this.widgetForm.column.length == 0) this.$message.error("没有需要展示的内容")
       else {
         this.transformToAvueOptions(this.widgetForm).then(data => {
-          this.widgetFormPreview = data
+          this.updateFormPreviewData(data)
           this.previewVisible = true
         })
       }
@@ -480,13 +490,14 @@ export default {
         this.$message.error(e.message)
       }
     },
-    // 更新JSON - 弹窗
+    // 查看JSON - 弹窗
     handleGenerateJson() {
       this.transformToAvueOptions(this.widgetForm).then(data => {
         // todo 未响应式
-        this.widgetFormPreview = data
+        this.updateFormPreviewData(data)
         this.generateJsonVisible = true
         this.updatePreviewKey = new Date().getTime()
+        
       })
     },
     // 生成JSON - 弹窗 - 确定
@@ -720,30 +731,9 @@ export default {
     async getData() {
       return await this.transformToAvueOptions(this.widgetForm)
     },
-    // 保存配置到常用模块
+    // 保存组合配置
     onSaveColumn() {
-      let config = localStorage.getItem(composeComponentKey)
-      if(!config) {
-        config = {
-          formConfig: [],
-          tableConfig: [],
-        }
-      }else{
-        config = JSON.parse(config)
-      }
-      if(!config.formConfig) {
-        config.formConfig = []
-      }
-      config.formConfig.push(this.widgetForm)
-      const result = JSON.stringify(config)
-      try {
-        localStorage.setItem(composeComponentKey, result)
-        this.$confirm('是否需要下载成配置', '是否下载').then(()=>{
-          saveFile( result, 'test.json')
-        })
-      } catch (error) {
-        console.error('error', error)        
-      }
+      saveConfigToLocal.call(this,'formConfig', this.widgetForm)
     },
     // 更新表单编辑的配置
     updateEditorFormConfig(config) {
@@ -760,4 +750,9 @@ export default {
 
 <style lang="scss">
 @import './styles/index.scss';
+.compose-menu-tab {
+  .el-tabs__nav-wrap {
+    height: 45px;
+  }
+}
 </style>

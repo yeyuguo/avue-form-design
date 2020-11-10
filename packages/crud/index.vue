@@ -20,25 +20,26 @@
       <div class="avue-crud__right">
         <el-button type="text"
                    size="medium"
-                   icon="el-icon-document"
-                   @click="handleAvueDoc">Avue文档</el-button>
-        <el-button type="text"
-                   size="medium"
                    icon="el-icon-upload2"
-                   @click="importJsonVisible = true">导入JSON</el-button>
+                   @click="importJsonVisible = true">导入表格JSON</el-button>
         <el-button type="text"
                    size="medium"
                    icon="el-icon-download"
-                   @click="handleGenerateJson">生成JSON</el-button>
-        <el-button type="text"
-                   size="medium"
-                   icon="el-icon-view"
-                   @click="handlePreview">预览</el-button>
+                   @click="handleGenerateJson">查看表格JSON</el-button>
         <el-button class="danger"
                    type="text"
                    size="medium"
                    icon="el-icon-delete"
                    @click="handleClear">清空</el-button>
+        <el-button type="text"
+                   size="medium"
+                   icon="el-icon-view"
+                   @click="handlePreview">预览</el-button>
+        <el-button
+                    size="medium"
+                    type="text"
+                    icon="el-icon-download"
+                    @click="onSaveColumn"> 保存/下载配置 </el-button>
       </div>
     </div>
     <!-- 配置 -->
@@ -110,7 +111,7 @@
     <el-drawer title="预览"
                size="70%"
                :visible.sync="drawer">
-      <avue-crud :option="codeOption"
+      <avue-crud :option="storePreviewConfigTable"
                  :data="codeList"></avue-crud>
     </el-drawer>
   </div>
@@ -123,8 +124,9 @@ import { pretty } from 'js-object-pretty-print'
 import { crudDecoder } from './decoder.js'
 import VJsonEditor from 'v-jsoneditor'
 const Mock = require('mockjs')
+import { saveConfigToLocal } from '@utils/file-handle'
 export default {
-  name: 'crud',
+  name: 'CrudDesign',
   components: { VJsonEditor },
   data () {
     return {
@@ -184,7 +186,10 @@ export default {
       var jsObj = eval('(' + jsStr + ')');
       return jsObj
     },
-
+    // store 里存储的 codeOption
+    storePreviewConfigTable() {
+      return this.$store.state.tableConfigPreview
+    }
   },
   watch: {
     optionData (value) {
@@ -197,10 +202,11 @@ export default {
     }
   },
   methods: {
-    // 生成JSON - 弹窗
+    // 查看JSON - 弹窗
     handleGenerateJson () {
       this.widgetFormPreview = this.codeOption;
       this.generateJsonVisible = true
+      this.$store.commit('updateConfigPreviewTable', this.widgetFormPreview)
     },
     // 导入JSON - 弹窗 - 确定
     handleImportJsonSubmit () {
@@ -232,6 +238,7 @@ export default {
     },
     handlePreview () {
       this.drawer = true;
+      this.$store.commit('updateConfigPreviewTable', this.codeOption)
     },
     code () {
       function vaild (option = {}, ele = '') {
@@ -292,7 +299,10 @@ export default {
     rowSave (row, done) {
       this.list.push(row)
       done();
-    }
+    },
+    onSaveColumn() {
+      saveConfigToLocal.call(this,'tableConfig', this.storePreviewConfigTable)
+    },
   }
 }
 </script>

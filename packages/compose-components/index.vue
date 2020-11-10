@@ -10,11 +10,18 @@
             <el-button size="mini" type="danger" class="h-8" @click="onDeleteComposeOption(item, index)">删除</el-button>
             <el-button size="mini" class="h-8" @click="updateFormConfig(item, index)">应用</el-button>
           </div>
-          <avue-form
-              ref="form"
-              class="preview-form"
-              :option="item"
-              v-model="widgetModels"></avue-form>
+          <template v-if="source == 'form'">
+            <avue-form
+                ref="form"
+                class="preview-form"
+                :option="item"
+                v-model="widgetModels"></avue-form>
+          </template>
+          <template v-else>
+            <div>
+              表格组合
+            </div>
+          </template>
         </div>
     </template>
     <div v-else class="mt-8">
@@ -31,6 +38,12 @@ export default {
   name: "ComposeComponents",
   components: { NoData },
   inject: ["updateEditorFormConfig"],
+  props: {
+    source: {
+      type: String, 
+      required: true
+    }
+  },
   data() {
     return {
       widgetModels: {},
@@ -73,6 +86,15 @@ export default {
       }
     }
   },
+  computed: {
+    configKeyName() {
+      const dict = {
+        form: 'widgetForm', 
+        table: 'tableConfig'
+      }
+      return dict[this.source]
+    },
+  },
   created() {
     this.getStorageConfig();
   },
@@ -85,7 +107,9 @@ export default {
     },
     updateFormConfig(item) {
       this.$confirm('会覆盖当前编辑配置','更新配置').then(()=>{
-        this.updateEditorFormConfig(item)
+        if(this.source === 'form') {
+          this.updateEditorFormConfig(item)
+        }
       })
     },
     // 清除单个组合组件配置
@@ -95,10 +119,7 @@ export default {
         this.dataList.splice(index, 1)
         let config = localStorage.getItem(composeComponentKey)
         config = JSON.parse(config)
-        config.formConfig = [
-          ...config.formConfig,
-          ...this.dataList
-        ]
+        config[this.configKeyName] = this.dataList
         localStorage.setItem(composeComponentKey, JSON.stringify(config))
       }).catch(() => {
 
