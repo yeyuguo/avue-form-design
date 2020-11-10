@@ -724,11 +724,17 @@ export default {
     onSaveColumn() {
       let config = localStorage.getItem(composeComponentKey)
       if(!config) {
-        config = []
+        config = {
+          formConfig: [],
+          tableConfig: [],
+        }
       }else{
         config = JSON.parse(config)
       }
-      config.push(this.widgetForm)
+      if(!config.formConfig) {
+        config.formConfig = []
+      }
+      config.formConfig.push(this.widgetForm)
       const result = JSON.stringify(config)
       try {
         localStorage.setItem(composeComponentKey, result)

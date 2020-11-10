@@ -79,8 +79,9 @@ export default {
   methods: {
     getStorageConfig() {
       let config = localStorage.getItem(composeComponentKey)
-      if(!config) return 
-      this.dataList = JSON.parse(config)
+      config = JSON.parse(config)
+      if(!config || !config.formConfig) return 
+      this.dataList = config.formConfig
     },
     updateFormConfig(item) {
       this.$confirm('会覆盖当前编辑配置','更新配置').then(()=>{
@@ -92,7 +93,13 @@ export default {
       console.log('item, index: ', item, index);
       this.$confirm('删除不可恢复','删除配置').then(()=>{
         this.dataList.splice(index, 1)
-        localStorage.setItem(composeComponentKey, JSON.stringify(this.dataList))
+        let config = localStorage.getItem(composeComponentKey)
+        config = JSON.parse(config)
+        config.formConfig = [
+          ...config.formConfig,
+          ...this.dataList
+        ]
+        localStorage.setItem(composeComponentKey, JSON.stringify(config))
       }).catch(() => {
 
       })
