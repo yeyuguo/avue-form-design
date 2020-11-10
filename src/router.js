@@ -5,8 +5,11 @@ Vue.use(Router)
 
 export default new Router({
   mode: 'history',
-  redirect: '/form-design',
   routes: [
+    {
+      path: '/',
+      redirect: '/form-design',
+    },
     {
       name: 'form-design',
       path: '/form-design',
